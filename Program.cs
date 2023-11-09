@@ -7,8 +7,6 @@ namespace ImageUploaderApp
 
         static void Main(string[] args)
         {
-            args = new string[1] { "L:\\Music (Lossless)\\6.9Hz\\2003 Tech Jelly\\cover.jpg" };
-
             //========================== Test ============================//
             if (args.Length == 0)
             {
