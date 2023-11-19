@@ -7,6 +7,8 @@ namespace ImageUploaderApp
 
         static void Main(string[] args)
         {
+            
+
             //========================== Test ============================//
             if (args.Length == 0)
             {

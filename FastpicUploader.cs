@@ -37,97 +37,10 @@ namespace ImageUploaderApp
 
         private const string uploadUrl = "https://fastpic.org/uploadmulti";
 
-        private ThumbnailTitleType thumbnailTitleType; //Что писать на превьюшке: text, size, filename, no
-        private int thumbnailSize;    //Размер превьюшки по горизонтали
-        private string thumbnailTitleText; //Текст на превьюшке
-        
-        private int imageQuality; //Качество jpeg
-        private int imageRotate; //Значение угла: 0, 90, 180, 270
-        private bool imageNeedReduce; //Нужно ли изменять размер
-        private int imageSizeSide; //Размер стороны, ширина
 
-        public ThumbnailTitleType ThumbnailTitleType
+        public FastpicUploader() : base()
         {
-            get { return thumbnailTitleType; }
-            set { thumbnailTitleType = value; }
-        }
-
-        public int ThumbnailSize
-        {
-            get { return thumbnailSize; }
-            set
-            {
-                if (value < 100 || value > 300)
-                    thumbnailSize = 170;
-                else
-                    thumbnailSize = value;
-            }
-        }
-
-        public string ThumbnailTitleText
-        {
-            get { return thumbnailTitleText; }
-            set { thumbnailTitleText = value; }
-        }
-
-        public int ImageQuality
-        {
-            get { return imageQuality; }
-            set 
-            { 
-                if(value < 1 || value > 100)
-                    imageQuality = 100;
-                else
-                    imageQuality = value;
-            }
-        }
-
-        public int ImageRotate
-        {
-            get { return imageRotate; }
-            set
-            {   //Округляем до ближайшего угла кратного 90 градусов
-                value = Math.Abs(value);
-                if (value % 90 < 45)
-                {
-                    imageRotate = (value / 90) * 90;
-                }
-                else
-                {
-                    imageRotate = (value / 90) * 90 + 90;
-                }
-            }
-        }
-
-        public bool ImageNeedReduce
-        {
-            get { return imageNeedReduce; }
-            set { imageNeedReduce = value; }
-        }
-
-        public int ImageSizeSide
-        {
-            get { return imageSizeSide; }
-            set
-            {
-                if (value > 0)
-                    imageSizeSide = value;
-                else
-                    imageSizeSide = 500;
-            }
-        }
-
-
-        public FastpicUploader()
-        {
-            thumbnailTitleType = ThumbnailTitleType.SIZE;
-            thumbnailSize = 150;
-            thumbnailTitleText = "Увеличить";
-
-            imageQuality = 100;
-            imageRotate = 0;
-            imageNeedReduce = true;
-            imageSizeSide = 500;
+            
         }
 
         private MultipartFormDataContent PrepareMultipartFormDataContent(string imageFilePath)
@@ -137,17 +50,17 @@ namespace ImageUploaderApp
             string fileName = fileInfo.Name;
 
             //Устанавливаем переменные веб формы, передаваемые в POST запросе (взяты из HTML fastpic.org)
-            string check_thumb = thumbnailTitleType.ToString().ToLower();
-            string thumb_text = thumbnailTitleText;
-            string thumb_size = thumbnailSize.ToString();
+            string check_thumb = ThumbnailTitleType.ToString().ToLower();
+            string thumb_text = ThumbnailTitleText;
+            string thumb_size = ThumbnailSize.ToString();
             
             string check_orig_resize = "1";
-            string orig_resize = imageSizeSide.ToString();
+            string orig_resize = ImageSizeSide.ToString();
             string res_select = orig_resize;
             string check_orig_rotate = "1";
-            string orig_rotate = imageRotate.ToString();
+            string orig_rotate = ImageRotate.ToString();
             string check_optimization = "on";
-            string jpeg_quality = imageQuality.ToString();
+            string jpeg_quality = ImageQuality.ToString();
             
             string submit = "Загрузить";
             string uploading = "1";
@@ -156,7 +69,7 @@ namespace ImageUploaderApp
             multipartFormContent.Add(new StringContent(thumb_text), name: "thumb_text"); //Передается всегда
             multipartFormContent.Add(new StringContent(thumb_size), name: "thumb_size"); //Передается всегда
 
-            if (imageNeedReduce)
+            if (ImageNeedReduce)
             {   //Передается если установлен чекбокс изменения размера картинки
                 multipartFormContent.Add(new StringContent(check_orig_resize), name: "check_orig_resize");
             }
@@ -164,14 +77,14 @@ namespace ImageUploaderApp
             multipartFormContent.Add(new StringContent(orig_resize), name: "orig_resize"); //Передается всегда 
             multipartFormContent.Add(new StringContent(res_select), name: "res_select"); //Передается всегда
 
-            if (imageRotate > 0)
+            if (ImageRotate > 0)
             {   //Передается если установлен чекбокс поворота картинки
                 multipartFormContent.Add(new StringContent(check_orig_rotate), name: "check_orig_rotate");
             }            
             
             multipartFormContent.Add(new StringContent(orig_rotate), name: "orig_rotate"); //Передается всегда
 
-            if (imageQuality < 100)
+            if (ImageQuality < 100)
             {   //Передается если установлен чекбокс изменения качества картинки
                 multipartFormContent.Add(new StringContent(check_optimization), name: "check_optimization");
             }
@@ -210,7 +123,7 @@ namespace ImageUploaderApp
             return bbCodes;
         }
 
-        public async Task<List<string>> Upload(string imageFilePath)
+        public override async Task<List<string>> Upload(string imageFilePath)
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, uploadUrl);
             request.Content = PrepareMultipartFormDataContent(imageFilePath);

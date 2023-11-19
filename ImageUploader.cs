@@ -2,7 +2,7 @@
 
 namespace ImageUploaderApp
 {
-    internal class ImageUploader
+    internal abstract class ImageUploader
     {
         private protected static readonly HttpClientHandler httpClientHandler;
         private protected static readonly HttpClient httpClient;
@@ -23,6 +23,103 @@ namespace ImageUploaderApp
             httpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
         }
 
+
+        private ThumbnailTitleType thumbnailTitleType; //Что писать на превьюшке: text, size, filename, no
+        private int thumbnailSize;    //Размер превьюшки по горизонтали
+        private string thumbnailTitleText; //Текст на превьюшке
+
+        private int imageQuality; //Качество jpeg
+        private int imageRotate; //Значение угла: 0, 90, 180, 270
+        private bool imageNeedReduce; //Нужно ли изменять размер
+        private int imageSizeSide; //Размер стороны, ширина
+
+        public ThumbnailTitleType ThumbnailTitleType
+        {
+            get { return thumbnailTitleType; }
+            set { thumbnailTitleType = value; }
+        }
+
+        public int ThumbnailSize
+        {
+            get { return thumbnailSize; }
+            set
+            {
+                if (value < 100 || value > 300)
+                    thumbnailSize = 170;
+                else
+                    thumbnailSize = value;
+            }
+        }
+
+        public string ThumbnailTitleText
+        {
+            get { return thumbnailTitleText; }
+            set { thumbnailTitleText = value; }
+        }
+
+        public int ImageQuality
+        {
+            get { return imageQuality; }
+            set
+            {
+                if (value < 1 || value > 100)
+                    imageQuality = 100;
+                else
+                    imageQuality = value;
+            }
+        }
+
+        public int ImageRotate
+        {
+            get { return imageRotate; }
+            set
+            {   //Округляем до ближайшего угла кратного 90 градусов
+                value = Math.Abs(value);
+                if (value % 90 < 45)
+                {
+                    imageRotate = (value / 90) * 90;
+                }
+                else
+                {
+                    imageRotate = (value / 90) * 90 + 90;
+                }
+            }
+        }
+
+        public bool ImageNeedReduce
+        {
+            get { return imageNeedReduce; }
+            set { imageNeedReduce = value; }
+        }
+
+        public int ImageSizeSide
+        {
+            get { return imageSizeSide; }
+            set
+            {
+                if (value > 0)
+                    imageSizeSide = value;
+                else
+                    imageSizeSide = 500;
+            }
+        }
+
+        public ImageUploader()
+        {
+            ThumbnailTitleType = ThumbnailTitleType.SIZE;
+            ThumbnailSize = 150;
+            ThumbnailTitleText = "Увеличить";
+
+            ImageQuality = 100;
+            ImageRotate = 0;
+            ImageNeedReduce = true;
+            ImageSizeSide = 500;
+        }
+
+
+
+
+        public abstract Task<List<string>> Upload(string imageFilePath);
 
     }
 }

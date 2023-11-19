@@ -29,100 +29,10 @@ namespace ImageUploaderApp
         private const string getapic = "https://getapic.me";
         private const string uploadUrl = "https://getapic.me/upload";
 
-        private ThumbnailTitleType thumbnailTitleType; //Что писать на превьюшке: text, size, filename, no
-        private int thumbnailSize;    //Размер превьюшки по горизонтали
-        private string thumbnailTitleText; //Текст на превьюшке
 
-        private int imageQuality; //Качество jpeg
-        private int imageRotate; //Значение угла: 0, 90, 180, 270, 360
-        private bool imageNeedReduce; //Нужно ли изменять размер
-        private int imageSizeSide; //Размер стороны, ширина
-
-
-
-
-
-        public ThumbnailTitleType ThumbnailTitleType
+        public GetapicUploader() : base()
         {
-            get { return thumbnailTitleType; }
-            set { thumbnailTitleType = value; }
-        }
-
-        public int ThumbnailSize
-        {
-            get { return thumbnailSize; }
-            set
-            {
-                if (value < 50 || value > 800)
-                    thumbnailSize = 170;
-                else
-                    thumbnailSize = value;
-            }
-        }
-
-        public string ThumbnailTitleText
-        {
-            get { return thumbnailTitleText; }
-            set { thumbnailTitleText = value; }
-        }
-
-        public int ImageQuality
-        {
-            get { return imageQuality; }
-            set
-            {
-                if (value < 1 || value > 100)
-                    imageQuality = 100;
-                else
-                    imageQuality = value;
-            }
-        }
-
-        public int ImageRotate
-        {
-            get { return imageRotate; }
-            set 
-            {   //Округляем до ближайшего угла кратного 90 градусов
-                value = Math.Abs(value);
-                if (value % 90 < 45)
-                {
-                    imageRotate = (value / 90) * 90;
-                }
-                else
-                {
-                    imageRotate = (value / 90) * 90 + 90;
-                }
-            }
-        }
-
-        public bool ImageNeedReduce
-        {
-            get { return imageNeedReduce; }
-            set { imageNeedReduce = value; }
-        }
-
-        public int ImageSizeSide
-        {
-            get { return imageSizeSide; }
-            set
-            {
-                if (value > 0)
-                    imageSizeSide = value;
-                else
-                    imageSizeSide = 500;
-            }
-        }
-
-        public GetapicUploader()
-        {
-            thumbnailTitleType = ThumbnailTitleType.SIZE;
-            thumbnailTitleText = "Увеличить";
-            thumbnailSize = 150;
-            
-            imageQuality = 100;
-            imageRotate = 0;
-            imageNeedReduce = true;
-            imageSizeSide = 500;
+           
         }
 
         private MultipartFormDataContent PrepareMultipartFormDataContent(string imageFilePath, string session, string suid)
@@ -132,20 +42,20 @@ namespace ImageUploaderApp
             string fileName = fileInfo.Name;
 
             //Устанавливаем переменные веб формы, передаваемые в POST запросе (взяты из HTML getapic.me)
-            string getpreviewsize = thumbnailSize.ToString();
-            string getpreviewalt = thumbnailTitleType switch {
+            string getpreviewsize = ThumbnailSize.ToString();
+            string getpreviewalt = ThumbnailTitleType switch {
                                         ThumbnailTitleType.NO => "",
                                         ThumbnailTitleType.SIZE => "S",
-                                        ThumbnailTitleType.TEXT => thumbnailTitleText,
+                                        ThumbnailTitleType.TEXT => ThumbnailTitleText,
                                         ThumbnailTitleType.FILENAME => fileName,
                                         _ => ""
                                    };
 
-            string needreduce = imageNeedReduce ? "1" : "0";
+            string needreduce = ImageNeedReduce ? "1" : "0";
             string upload_resizeside = "width";
-            string getreduceimage = imageSizeSide.ToString();
-            string upload_quality = imageQuality.ToString();
-            string upload_angle = (imageRotate / 90).ToString();
+            string getreduceimage = ImageSizeSide.ToString();
+            string upload_quality = ImageQuality.ToString();
+            string upload_angle = (ImageRotate / 90).ToString();
             string gettypeofdownload = "N";
 
             multipartFormContent.Add(new StringContent(getpreviewsize), name: "getpreviewsize");
@@ -226,7 +136,7 @@ namespace ImageUploaderApp
             return bbCodes;
         }
 
-        public async Task<List<string>> Upload(string imageFilePath)
+        public override async Task<List<string>> Upload(string imageFilePath)
         {
             string html = await httpClient.GetStringAsync(getapic);
             string session = GetSessionFromHtml(html);//Идентификатор сессии
@@ -242,10 +152,5 @@ namespace ImageUploaderApp
             List<string> bbCodes = GetBBCodesFromHtml(html);
             return bbCodes;
         }
-
-
     }
-
-
-
 }
